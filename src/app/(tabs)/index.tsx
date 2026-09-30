@@ -81,6 +81,19 @@ export default function HalamanUtama() {
           {cuaca.saatIni.kecepatanAngin} km/j
         </Text>
       )}
+      {cuaca &&
+        cuaca.harian.suhuMaksimal[0] !== undefined &&
+        cuaca.harian.suhuMinimal[0] !== undefined && (
+          <Text style={{ fontSize: 12, color: "#888" }}>
+            Hari ini: {cuaca.harian.suhuMinimal[0]}°C (min) –{" "}
+            {cuaca.harian.suhuMaksimal[0]}°C (maks)
+          </Text>
+        )}
+      {kualitasUdara && (
+        <Text style={{ fontSize: 11, color: "#888", textAlign: "center" }}>
+          PM2.5 {kualitasUdara.pm25} µg/m³ • PM10 {kualitasUdara.pm10} µg/m³
+        </Text>
+      )}
       <AtribusiCuaca />
     </SafeAreaView>
   );
