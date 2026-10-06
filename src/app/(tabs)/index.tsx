@@ -14,6 +14,7 @@ import { HasilGeocoding } from "../../../types/geocoding";
 import { DataCuacaLengkap, DataKualitasUdara } from "../../../types/weather";
 import { mintaIzinLokasi, ambilKoordinatSaatIni } from "../../services/locationService";
 import { router } from "expo-router";
+import { ambilSemuaFavorit } from "../../services/favoritStorage";
 
 export default function HalamanUtama() {
   const [teksCari, setTeksCari] = useState("");
@@ -24,8 +25,13 @@ export default function HalamanUtama() {
   const [sedangMemuat, setSedangMemuat] = useState(false);
   const [pesanError, setPesanError] = useState<string | null>(null);
   const [pesanLokasi, setPesanLokasi] = useState<string | null>(null);
+  const [daftarFavoritId, setDaftarFavoritId] = useState<number[]>([]);
 
   const teksTertunda = useDebounce(teksCari, 500);
+
+  useEffect(() => {
+    ambilSemuaFavorit().then((fav) => setDaftarFavoritId(fav.map((k) => k.id)));
+  }, []);
   const requestIdRef = useRef(0); // pencegah race condition
   useEffect(() => {
     if (teksTertunda.trim().length === 0) {
@@ -104,14 +110,15 @@ export default function HalamanUtama() {
           />
           <Button
             title="Tambahkan ke Favorit"
+            disabled={kotaTerpilih ? daftarFavoritId.includes(kotaTerpilih.id) : false}
             onPress={() =>
               router.push({
                 pathname: "/tambah-favorit",
                 params: {
-                  id: String(kotaTerpilih.id),
-                  nama: kotaTerpilih.name,
-                  lat: String(kotaTerpilih.latitude),
-                  lon: String(kotaTerpilih.longitude),
+                  id: String(kotaTerpilih?.id),
+                  nama: kotaTerpilih?.name,
+                  lat: String(kotaTerpilih?.latitude),
+                  lon: String(kotaTerpilih?.longitude),
                 },
               })
             }
