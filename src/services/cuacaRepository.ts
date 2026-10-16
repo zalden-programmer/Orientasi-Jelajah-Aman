@@ -17,15 +17,20 @@ export async function ambilCuacaOfflineFirst(
     if (cache && umur < TTL_SEGAR_MS && !opsi.paksaPerbarui) {
         return { ...cache, sumber: "cache-segar" };
     }
-    // 2. Coba ambil dari internet
+    // 2. Coba ambil dari internet - simpan error aslinya
+    let errorJaringan: Error | null = null;
     const dariJaringan = await Promise.all([
         ambilCuaca(kota.latitude, kota.longitude),
         ambilKualitasUdara(kota.latitude, kota.longitude),
-    ]).catch(() => null);
-    // 3. Internet gagal -> pakai cache lama jika ada, kalau tidak: menyerah
+    ]).catch((err) => {
+        errorJaringan = err instanceof Error ? err : new Error(String(err));
+        return null;
+    });
+    // 3. Internet gagal -> pakai cache lama jika ada, kalau tidak: lempar error asli
     if (!dariJaringan) {
         if (cache) return { ...cache, sumber: "cache-basi" };
-        throw new Error("Tidak ada koneksi dan belum ada data tersimpan");
+        // Lempar error asli dari jaringan, bukan pesan generik
+        throw errorJaringan ?? new Error("Tidak ada koneksi dan belum ada data tersimpan");
     }
     // 4. Internet berhasil -> data baru menimpa cache
     const [cuaca, kualitasUdara] = dariJaringan;

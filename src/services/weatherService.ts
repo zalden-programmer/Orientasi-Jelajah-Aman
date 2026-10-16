@@ -1,6 +1,7 @@
 import { DataCuacaLengkap } from "../../types/weather";
 const BASE_URL = "https://api.open-meteo.com/v1/forecast";
-const BATAS_WAKTU_MS = 3000;
+// Tingkatkan timeout ke 15 detik untuk jaringan lambat / iOS simulator
+const BATAS_WAKTU_MS = 15000;
 export async function ambilCuaca(
     latitude: number,
     longitude: number
@@ -14,7 +15,8 @@ export async function ambilCuaca(
     try {
         const response = await fetch(url, { signal: controller.signal });
         if (!response.ok) {
-            throw new Error(`Gagal memuat cuaca (status ${response.status})`);
+            const text = await response.text().catch(() => '');
+            throw new Error(`Gagal memuat cuaca (status ${response.status}): ${text}`);
         }
         const data = await response.json();
         return {
@@ -33,7 +35,7 @@ export async function ambilCuaca(
         };
     } catch (err) {
         if (err instanceof Error && err.name === "AbortError") {
-            throw new Error("Permintaan cuaca melebihi batas waktu, coba lagi");
+            throw new Error("Permintaan cuaca melebihi batas waktu (15 detik), cek koneksi internet");
         }
         throw err;
     } finally {
