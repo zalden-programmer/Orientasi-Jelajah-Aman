@@ -41,6 +41,10 @@ This command will move the starter code to the **app-example** directory and cre
 - If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
 - Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
 
+## Sumber Data Cuaca
+
+Ketika aplikasi menampilkan cuaca, data bisa berasal dari tiga kondisi yang berbeda. **Cache-segar** berarti data diambil dari penyimpanan lokal tanpa memanggil internet karena usianya masih di bawah TTL (30 menit), sedangkan **cache-basi** berarti koneksi internet gagal sehingga aplikasi terpaksa memakai data lama yang tersimpan dan mungkin sudah usang. **Firstrun offline** adalah kondisi paling awal ketika belum ada cache sama sekali dan internet juga tidak tersedia, sehingga aplikasi tidak punya apa pun untuk ditampilkan dan memberi tahu pengguna untuk menyambungkan internet. Label status data penting karena memberi tahu pengguna seberapa andal angka yang mereka lihat—baru dari internet, masih segar, atau sudah lama tersimpan—sehingga mereka tidak salah mengambil keputusan.
+
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:
