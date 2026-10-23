@@ -42,8 +42,9 @@ export default function TabLayout() {
             <Tabs.Screen
                 name="riwayat"
                 options={{
-                    title: "Favorit",
-                    tabBarAccessibilityLabel: "Kota Favorit",
+                    title: "Favorit & Riwayat",
+                    tabBarLabel: "Favorit",
+                    tabBarAccessibilityLabel: "Favorit dan Riwayat",
                     tabBarIcon: tabIcon("heart", "heart-outline"),
                 }}
             />

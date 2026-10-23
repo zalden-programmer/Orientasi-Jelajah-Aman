@@ -18,6 +18,7 @@ import { useDebounce } from "../../hooks/use-debounce";
 import { cariKota } from "../../services/geocodingService";
 import { ambilCuacaOfflineFirst, BATAS_CACHE_MS } from "../../services/cuacaRepository";
 import { bersihkanCacheLama, daftarKotaTersimpan } from "../../services/cacheRepository";
+import { catatRiwayat } from "../../services/riwayatStorage";
 import { mintaIzinLokasi, ambilKoordinatSaatIni } from "../../services/locationService";
 import { konversiTingkatAQI } from "../../services/weatherAdapter";
 import { labelKodeCuaca } from "../../constants/weatherCodes";
@@ -62,6 +63,12 @@ export default function HalamanUtama() {
       );
       if (idSaatIni !== requestIdRef.current) return; // hasil basi, abaikan
       setHasil(data);
+      void catatRiwayat({
+        id: kota.id,
+        nama: kota.name,
+        latitude: kota.latitude,
+        longitude: kota.longitude,
+      }).catch(() => { });
       muatKotaTersimpan();
     } catch (err) {
       if (idSaatIni !== requestIdRef.current) return;
