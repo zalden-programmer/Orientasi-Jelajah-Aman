@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { View, Text, Button, Pressable, ScrollView, StyleSheet } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, router } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ambilSemuaFavorit, hapusFavorit } from "../../services/favoritStorage";
 import {
@@ -50,6 +51,19 @@ export default function TabRiwayat() {
                 .catch(() => setDaftarRiwayat([]));
         }, [])
     );
+
+    function bukaKota(kota: KotaRiwayat) {
+        router.navigate({
+            pathname: "/",
+            params: {
+                id: String(kota.id),
+                nama: kota.nama,
+                lat: String(kota.latitude),
+                lon: String(kota.longitude),
+                ts: String(kota.dibukaPada),
+            },
+        });
+    }
 
     async function prosesHapus() {
         if (!targetHapus) return;
@@ -146,23 +160,45 @@ export default function TabRiwayat() {
                     </View>
                 ) : (
                     <View style={styles.daftar}>
-                        <Text style={styles.judulSeksi}>Riwayat Kota Dibuka</Text>
+                        <Text style={styles.judulSeksi}>Pencarian Terakhir</Text>
                         <Text style={styles.keterangan}>
-                            {daftarRiwayat.length} kota terakhir dilihat
+                            {daftarRiwayat.length} pencarian terakhir
                         </Text>
                         {daftarRiwayat.length === 0 && (
                             <Text style={styles.kosong}>
-                                Belum ada riwayat. Cari dan buka kota di Beranda.
+                                Belum ada riwayat pencarian. Cari kota di Beranda lalu pilih
+                                salah satu hasilnya.
                             </Text>
                         )}
                         {daftarRiwayat.map((kota) => (
                             <View key={kota.dibukaPada} style={styles.baris}>
-                                <View style={styles.infoKota}>
-                                    <Text style={styles.namaKota}>{kota.nama}</Text>
-                                    <Text style={styles.keterangan}>
-                                        {formatWaktu(kota.dibukaPada)}
-                                    </Text>
-                                </View>
+                                <Pressable
+                                    onPress={() => bukaKota(kota)}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={`Buka ${kota.nama} di Beranda`}
+                                    style={({ pressed }) => [
+                                        styles.infoKota,
+                                        pressed && styles.infoKotaDitekan,
+                                    ]}
+                                >
+                                    <View style={styles.isiInfo}>
+                                        <Text style={styles.namaKota}>{kota.nama}</Text>
+                                        <Text style={styles.keterangan}>
+                                            {kota.kataKunci
+                                                ? `Dicari "${kota.kataKunci}" \u2022 `
+                                                : ""}
+                                            {formatWaktu(kota.dibukaPada)}
+                                        </Text>
+                                        <Text style={styles.hint}>
+                                            Ketuk untuk membuka lagi
+                                        </Text>
+                                    </View>
+                                    <Ionicons
+                                        name="chevron-forward"
+                                        size={18}
+                                        color="#60646C"
+                                    />
+                                </Pressable>
                                 <Button
                                     title="Hapus"
                                     color="#c0392b"
@@ -260,8 +296,24 @@ const styles = StyleSheet.create({
         borderBottomColor: "#E0E1E6",
     },
     infoKota: {
-        flexShrink: 1,
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        borderRadius: 8,
+        paddingVertical: 4,
+        paddingHorizontal: 4,
+    },
+    infoKotaDitekan: {
+        backgroundColor: "#F0F0F3",
+    },
+    isiInfo: {
+        flex: 1,
         gap: 2,
+    },
+    hint: {
+        fontSize: 12,
+        color: "#208AEF",
     },
     namaKota: {
         fontSize: 16,

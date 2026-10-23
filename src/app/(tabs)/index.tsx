@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import SearchBox from "../../../components/SearchBox";
 import WeatherCard from "../../components/WeatherCard";
 import AtribusiCuaca from "../../components/AtribusiCuaca";
@@ -24,6 +24,9 @@ import { konversiTingkatAQI } from "../../services/weatherAdapter";
 import { labelKodeCuaca } from "../../constants/weatherCodes";
 import { HasilGeocoding } from "../../../types/geocoding";
 import { HasilCuacaOffline, RingkasanKotaTersimpan } from "../../../types/cache";
+
+type SumberPilih = "pencarian" | "tersimpan" | "lokasi";
+
 export default function HalamanUtama() {
   const [teksCari, setTeksCari] = useState("");
   const [hasilPencarian, setHasilPencarian] = useState<HasilGeocoding[]>([]);
@@ -35,6 +38,14 @@ export default function HalamanUtama() {
   const [pesanLokasi, setPesanLokasi] = useState<string | null>(null);
   const teksTertunda = useDebounce(teksCari, 500);
   const requestIdRef = useRef(0); // pencegah race condition
+  // Parameter dikirim saat pengguna mengetuk entri "Pencarian Terakhir"
+  const params = useLocalSearchParams<{
+    id?: string;
+    nama?: string;
+    lat?: string;
+    lon?: string;
+    ts?: string;
+  }>();
   async function muatKotaTersimpan() {
     setKotaTersimpan(await daftarKotaTersimpan());
   }
@@ -51,7 +62,12 @@ export default function HalamanUtama() {
     }
     cariKota(teksTertunda).then(setHasilPencarian).catch(() => setHasilPencarian([]));
   }, [teksTertunda]);
-  async function pilihKota(kota: HasilGeocoding, paksaPerbarui = false) {
+  async function pilihKota(
+    kota: HasilGeocoding,
+    paksaPerbarui = false,
+    sumber: SumberPilih = "pencarian",
+    kataKunci?: string
+  ) {
     setKotaTerpilih(kota);
     const idSaatIni = ++requestIdRef.current;
     setSedangMemuat(true);
@@ -63,12 +79,19 @@ export default function HalamanUtama() {
       );
       if (idSaatIni !== requestIdRef.current) return; // hasil basi, abaikan
       setHasil(data);
-      void catatRiwayat({
-        id: kota.id,
-        nama: kota.name,
-        latitude: kota.latitude,
-        longitude: kota.longitude,
-      }).catch(() => { });
+      // Riwayat hanya mencatat kota yang dipilih dari hasil pencarian.
+      if (sumber === "pencarian") {
+        const kueri = (kataKunci ?? teksCari).trim();
+        void catatRiwayat(
+          {
+            id: kota.id,
+            nama: kota.name,
+            latitude: kota.latitude,
+            longitude: kota.longitude,
+          },
+          kueri || undefined
+        ).catch(() => { });
+      }
       muatKotaTersimpan();
     } catch (err) {
       if (idSaatIni !== requestIdRef.current) return;
@@ -80,6 +103,40 @@ export default function HalamanUtama() {
       if (idSaatIni === requestIdRef.current) setSedangMemuat(false);
     }
   }
+
+  // Referensi agar effect parameter selalu memakai versi pilihKota terbaru.
+  const pilihKotaRef = useRef(pilihKota);
+  useEffect(() => {
+    pilihKotaRef.current = pilihKota;
+  });
+
+  // Buka kota yang diklik dari daftar "Pencarian Terakhir" di tab Riwayat.
+  const tsTerakhirRef = useRef<string | null>(null);
+  useEffect(() => {
+    const { id, nama, lat, lon, ts } = params;
+    if (!nama || !lat || !lon || !ts) return;
+    if (tsTerakhirRef.current === ts) return;
+    const lintang = Number(lat);
+    const bujur = Number(lon);
+    if (!Number.isFinite(lintang) || !Number.isFinite(bujur)) return;
+    tsTerakhirRef.current = ts;
+    const idKota = Number(id);
+    // Sengaja langsung mengisi kolom pencarian agar konteks kota terlihat.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setTeksCari(nama);
+    void pilihKotaRef.current(
+      {
+        id: Number.isFinite(idKota) ? idKota : -1,
+        name: nama,
+        latitude: lintang,
+        longitude: bujur,
+        country: "",
+      },
+      false,
+      "pencarian",
+      nama
+    );
+  }, [params]);
   async function gunakanLokasiSaatIni() {
     const status = await mintaIzinLokasi();
     if (status === "denied") {
@@ -98,7 +155,7 @@ export default function HalamanUtama() {
       latitude: koordinat.latitude,
       longitude: koordinat.longitude,
       country: "",
-    });
+    }, false, "lokasi");
   }
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -106,7 +163,7 @@ export default function HalamanUtama() {
         contentContainerStyle={{ padding: 16, gap: 16 }}
         keyboardShouldPersistTaps="handled"
       >
-        <SearchBox onCari={setTeksCari} />
+        <SearchBox nilai={teksCari} onCari={setTeksCari} />
         <Button title="Gunakan Lokasi Saat Ini" onPress={gunakanLokasiSaatIni} />
         {pesanLokasi && <Text accessibilityLabel={pesanLokasi}>{pesanLokasi}</Text>}
         {hasilPencarian.map((kota) => (
@@ -128,7 +185,7 @@ export default function HalamanUtama() {
                     latitude: k.latitude,
                     longitude: k.longitude,
                     country: "",
-                  })
+                  }, false, "tersimpan")
                 }
               >
                 <Text>{k.nama}</Text>
