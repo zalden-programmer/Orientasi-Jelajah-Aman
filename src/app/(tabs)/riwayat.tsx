@@ -1,8 +1,10 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { View, Text, Button, Pressable, ScrollView, StyleSheet } from "react-native";
 import { useFocusEffect, router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { type WarnaTema } from "../../constants/theme";
+import { useTheme } from "../../hooks/use-theme";
 import { ambilSemuaFavorit, hapusFavorit } from "../../services/favoritStorage";
 import {
     ambilRiwayat,
@@ -38,6 +40,8 @@ function formatWaktu(ms: number): string {
 }
 
 export default function TabRiwayat() {
+    const warna = useTheme();
+    const styles = useMemo(() => buatGaya(warna), [warna]);
     const [seksi, setSeksi] = useState<Seksi>("favorit");
     const [daftarFavorit, setDaftarFavorit] = useState<KotaFavorit[]>([]);
     const [daftarRiwayat, setDaftarRiwayat] = useState<KotaRiwayat[]>([]);
@@ -169,7 +173,7 @@ export default function TabRiwayat() {
                                 <Text style={styles.namaKota}>{kota.nama}</Text>
                                 <Button
                                     title="Hapus"
-                                    color="#c0392b"
+                                    color={warna.danger}
                                     onPress={() =>
                                         setTargetHapus({
                                             tipe: "favorit",
@@ -224,18 +228,18 @@ export default function TabRiwayat() {
                                     <Ionicons
                                         name="chevron-forward"
                                         size={18}
-                                        color="#60646C"
+                                        color={warna.textSecondary}
                                     />
                                 </Pressable>
                                 <View style={styles.aksiBaris}>
                                     <Button
                                         title="Hapus Cache"
-                                        color="#c0392b"
+                                        color={warna.danger}
                                         onPress={() => hapusCacheKota(kota)}
                                     />
                                     <Button
                                         title="Hapus Riwayat"
-                                        color="#c0392b"
+                                        color={warna.danger}
                                         onPress={() =>
                                             setTargetHapus({
                                                 tipe: "riwayat",
@@ -251,7 +255,7 @@ export default function TabRiwayat() {
                             <View style={styles.aksiBawah}>
                                 <Button
                                     title="Hapus Semua Riwayat"
-                                    color="#c0392b"
+                                    color={warna.danger}
                                     onPress={() => setTargetHapus({ tipe: "semua-riwayat" })}
                                 />
                             </View>
@@ -273,96 +277,101 @@ export default function TabRiwayat() {
     );
 }
 
-const styles = StyleSheet.create({
-    layar: {
-        flex: 1,
-    },
-    isi: {
-        padding: 16,
-        gap: 16,
-    },
-    segmen: {
-        flexDirection: "row",
-        backgroundColor: "#F0F0F3",
-        borderRadius: 10,
-        padding: 4,
-        gap: 4,
-    },
-    segmenItem: {
-        flex: 1,
-        paddingVertical: 10,
-        borderRadius: 8,
-        alignItems: "center",
-    },
-    segmenItemAktif: {
-        backgroundColor: "#208AEF",
-    },
-    segmenTeks: {
-        fontSize: 14,
-        fontWeight: "600",
-        color: "#60646C",
-    },
-    segmenTeksAktif: {
-        color: "#FFFFFF",
-    },
-    daftar: {
-        gap: 12,
-    },
-    judulSeksi: {
-        fontSize: 18,
-        fontWeight: "bold",
-    },
-    keterangan: {
-        fontSize: 12,
-        color: "#60646C",
-    },
-    kosong: {
-        fontSize: 14,
-        color: "#60646C",
-        fontStyle: "italic",
-    },
-    baris: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: 12,
-        paddingVertical: 12,
-        borderBottomWidth: StyleSheet.hairlineWidth,
-        borderBottomColor: "#E0E1E6",
-    },
-    infoKota: {
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-        borderRadius: 8,
-        paddingVertical: 4,
-        paddingHorizontal: 4,
-    },
-    infoKotaDitekan: {
-        backgroundColor: "#F0F0F3",
-    },
-    isiInfo: {
-        flex: 1,
-        gap: 2,
-    },
-    hint: {
-        fontSize: 12,
-        color: "#208AEF",
-    },
-    aksiBaris: {
-        gap: 6,
-    },
-    pesan: {
-        fontSize: 13,
-        color: "#1e7d32",
-    },
-    namaKota: {
-        fontSize: 16,
-        fontWeight: "600",
-    },
-    aksiBawah: {
-        marginTop: 8,
-        alignItems: "flex-end",
-    },
-});
+function buatGaya(warna: WarnaTema) {
+    return StyleSheet.create({
+        layar: {
+            flex: 1,
+            backgroundColor: warna.background,
+        },
+        isi: {
+            padding: 16,
+            gap: 16,
+        },
+        segmen: {
+            flexDirection: "row",
+            backgroundColor: warna.backgroundElement,
+            borderRadius: 10,
+            padding: 4,
+            gap: 4,
+        },
+        segmenItem: {
+            flex: 1,
+            paddingVertical: 10,
+            borderRadius: 8,
+            alignItems: "center",
+        },
+        segmenItemAktif: {
+            backgroundColor: warna.primary,
+        },
+        segmenTeks: {
+            fontSize: 14,
+            fontWeight: "600",
+            color: warna.textSecondary,
+        },
+        segmenTeksAktif: {
+            color: warna.onPrimary,
+        },
+        daftar: {
+            gap: 12,
+        },
+        judulSeksi: {
+            fontSize: 18,
+            fontWeight: "bold",
+            color: warna.text,
+        },
+        keterangan: {
+            fontSize: 12,
+            color: warna.textSecondary,
+        },
+        kosong: {
+            fontSize: 14,
+            color: warna.textSecondary,
+            fontStyle: "italic",
+        },
+        baris: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+            paddingVertical: 12,
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderBottomColor: warna.border,
+        },
+        infoKota: {
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+            borderRadius: 8,
+            paddingVertical: 4,
+            paddingHorizontal: 4,
+        },
+        infoKotaDitekan: {
+            backgroundColor: warna.backgroundElement,
+        },
+        isiInfo: {
+            flex: 1,
+            gap: 2,
+        },
+        hint: {
+            fontSize: 12,
+            color: warna.primary,
+        },
+        aksiBaris: {
+            gap: 6,
+        },
+        pesan: {
+            fontSize: 13,
+            color: warna.success,
+        },
+        namaKota: {
+            fontSize: 16,
+            fontWeight: "600",
+            color: warna.text,
+        },
+        aksiBawah: {
+            marginTop: 8,
+            alignItems: "flex-end",
+        },
+    });
+}

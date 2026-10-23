@@ -3,8 +3,7 @@ import { Tabs } from "expo-router";
 import type { ComponentProps } from "react";
 import type { ColorValue } from "react-native";
 
-const WARNA_IKON_AKTIF = "#208AEF"; // biru, senada dengan warna splash aplikasi
-const WARNA_IKON_NONAKTIF = "#000000";
+import { useThemePreference } from "@/providers/tema-provider";
 
 type IoniconName = ComponentProps<typeof Ionicons>["name"];
 
@@ -22,12 +21,21 @@ function tabIcon(aktif: IoniconName, nonaktif: IoniconName) {
 }
 
 export default function TabLayout() {
+    const { warna } = useThemePreference();
+
     return (
         <Tabs
             screenOptions={{
                 headerShown: true,
-                tabBarActiveTintColor: WARNA_IKON_AKTIF,
-                tabBarInactiveTintColor: WARNA_IKON_NONAKTIF,
+                headerStyle: { backgroundColor: warna.background },
+                headerTintColor: warna.text,
+                headerShadowVisible: false,
+                tabBarActiveTintColor: warna.primary,
+                tabBarInactiveTintColor: warna.textSecondary,
+                tabBarStyle: {
+                    backgroundColor: warna.background,
+                    borderTopColor: warna.border,
+                },
                 tabBarLabelStyle: { fontSize: 11 },
             }}
         >

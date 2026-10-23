@@ -1,5 +1,7 @@
 import { View, Text } from "react-native";
 import { SumberData } from "../../types/cache";
+import { useTheme } from "../hooks/use-theme";
+
 interface StatusDataProps {
     sumber: SumberData;
     disimpanPada: number;
@@ -18,6 +20,7 @@ function labelSumber(sumber: SumberData): string {
     return "Mode offline - data tersimpan mungkin sudah usang";
 }
 export default function StatusData({ sumber, disimpanPada }: StatusDataProps) {
+    const warna = useTheme();
     const basi = sumber === "cache-basi";
     const label = labelSumber(sumber);
     const umur = formatUmur(disimpanPada);
@@ -28,11 +31,22 @@ export default function StatusData({ sumber, disimpanPada }: StatusDataProps) {
             style={{
                 padding: 8,
                 borderRadius: 8,
-                backgroundColor: basi ? "#FEF3E2" : "#EAFBF6",
+                backgroundColor: basi
+                    ? warna.warningBackground
+                    : warna.successBackground,
             }}
         >
-            <Text style={{ fontSize: 12, color: basi ? "#B45309" : "#13795F" }}>{label}</Text>
-            <Text style={{ fontSize: 11, color: "#666666" }}>Diperbarui {umur}</Text>
+            <Text
+                style={{
+                    fontSize: 12,
+                    color: basi ? warna.warning : warna.success,
+                }}
+            >
+                {label}
+            </Text>
+            <Text style={{ fontSize: 11, color: warna.textSecondary }}>
+                Diperbarui {umur}
+            </Text>
         </View>
     );
 }

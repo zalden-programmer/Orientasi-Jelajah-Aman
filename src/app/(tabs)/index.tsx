@@ -15,6 +15,7 @@ import WeatherCard from "../../components/WeatherCard";
 import AtribusiCuaca from "../../components/AtribusiCuaca";
 import StatusData from "../../components/statusData";
 import { useDebounce } from "../../hooks/use-debounce";
+import { useTheme } from "../../hooks/use-theme";
 import { cariKota } from "../../services/geocodingService";
 import { ambilCuacaOfflineFirst, BATAS_CACHE_MS } from "../../services/cuacaRepository";
 import { bersihkanCacheLama, daftarKotaTersimpan } from "../../services/cacheRepository";
@@ -28,6 +29,7 @@ import { HasilCuacaOffline, RingkasanKotaTersimpan } from "../../../types/cache"
 type SumberPilih = "pencarian" | "tersimpan" | "lokasi";
 
 export default function HalamanUtama() {
+  const warna = useTheme();
   const [teksCari, setTeksCari] = useState("");
   const [hasilPencarian, setHasilPencarian] = useState<HasilGeocoding[]>([]);
   const [kotaTerpilih, setKotaTerpilih] = useState<HasilGeocoding | null>(null);
@@ -166,23 +168,33 @@ export default function HalamanUtama() {
     }, false, "lokasi");
   }
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: warna.background }}>
       <ScrollView
+        style={{ backgroundColor: warna.background }}
         contentContainerStyle={{ padding: 16, gap: 16 }}
         keyboardShouldPersistTaps="handled"
       >
         <SearchBox nilai={teksCari} onCari={setTeksCari} />
-        <Button title="Gunakan Lokasi Saat Ini" onPress={gunakanLokasiSaatIni} />
-        {pesanLokasi && <Text accessibilityLabel={pesanLokasi}>{pesanLokasi}</Text>}
+        <Button
+          title="Gunakan Lokasi Saat Ini"
+          color={warna.primary}
+          onPress={gunakanLokasiSaatIni}
+        />
+        {pesanLokasi && (
+          <Text style={{ color: warna.text }} accessibilityLabel={pesanLokasi}>
+            {pesanLokasi}
+          </Text>
+        )}
         {hasilPencarian.map((kota) => (
           <TouchableOpacity key={kota.id} onPress={() => pilihKota(kota)}>
-            <Text>{kota.name}</Text>
+            <Text style={{ color: warna.text, paddingVertical: 4 }}>{kota.name}</Text>
           </TouchableOpacity>
         ))}
         {kotaTersimpan.length > 0 && (
           <View style={{ gap: 6 }}>
-            <Text style={{ fontWeight: "bold" }}>Tersimpan di perangkat (bisa dibuka
-              offline)</Text>
+            <Text style={{ fontWeight: "bold", color: warna.text }}>
+              Tersimpan di perangkat (bisa dibuka offline)
+            </Text>
             {kotaTersimpan.map((k) => (
               <TouchableOpacity
                 key={k.kunci}
@@ -196,17 +208,20 @@ export default function HalamanUtama() {
                   }, false, "tersimpan")
                 }
               >
-                <Text>{k.nama}</Text>
+                <Text style={{ color: warna.text, paddingVertical: 4 }}>{k.nama}</Text>
               </TouchableOpacity>
             ))}
           </View>
         )}
-        {sedangMemuat && <ActivityIndicator />}
+        {sedangMemuat && <ActivityIndicator color={warna.primary} />}
         {pesanError && (
-          <View>
-            <Text accessibilityLabel={pesanError}>{pesanError}</Text>
+          <View style={{ gap: 8 }}>
+            <Text style={{ color: warna.danger }} accessibilityLabel={pesanError}>
+              {pesanError}
+            </Text>
             <Button
               title="Coba Lagi"
+              color={warna.primary}
               onPress={() => kotaTerpilih && pilihKota(kotaTerpilih, true)}
             />
           </View>
@@ -219,16 +234,18 @@ export default function HalamanUtama() {
               suhu={hasil.cuaca.saatIni.suhu}
               tingkatAQI={konversiTingkatAQI(hasil.kualitasUdara.indeksAQI)}
             />
-            <Text style={{ fontSize: 12, color: "#888888" }}>
+            <Text style={{ fontSize: 12, color: warna.textSecondary }}>
               Kondisi: {labelKodeCuaca(hasil.cuaca.saatIni.kodeCuaca)} {"\u2022"} Angin{" "}
               {hasil.cuaca.saatIni.kecepatanAngin} km/j
             </Text>
             <Button
               title="Perbarui Sekarang"
+              color={warna.primary}
               onPress={() => pilihKota(kotaTerpilih, true)}
             />
             <Button
               title="Tambahkan ke Favorit"
+              color={warna.primary}
               onPress={() =>
                 router.push({
                   pathname: "/tambah-favorit",

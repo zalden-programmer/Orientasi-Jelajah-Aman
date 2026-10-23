@@ -14,17 +14,37 @@ export const Colors = {
     backgroundElement: '#F0F0F3',
     backgroundSelected: '#E0E1E6',
     textSecondary: '#60646C',
+    primary: '#208AEF',
+    onPrimary: '#FFFFFF',
+    border: '#D9DCE1',
+    danger: '#C0392B',
+    success: '#13795F',
+    successBackground: '#EAFBF6',
+    warning: '#B45309',
+    warningBackground: '#FEF3E2',
+    inputBackground: '#FFFFFF',
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    text: '#F2F4F7',
+    background: '#0B0C0E',
+    backgroundElement: '#1C1E22',
+    backgroundSelected: '#2A2D32',
+    textSecondary: '#A7ADB7',
+    primary: '#4DA3FF',
+    onPrimary: '#04121F',
+    border: '#2E3238',
+    danger: '#FF7B72',
+    success: '#4ADE80',
+    successBackground: '#12291F',
+    warning: '#FBBF24',
+    warningBackground: '#322410',
+    inputBackground: '#15171A',
   },
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+export type SkemaWarna = keyof typeof Colors;
+export type WarnaTema = { [K in ThemeColor]: string };
 
 export const Fonts = Platform.select({
   ios: {
