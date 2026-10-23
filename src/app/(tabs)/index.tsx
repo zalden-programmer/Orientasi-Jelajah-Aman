@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import SearchBox from "../../../components/SearchBox";
-import WeatherCard from "../../components/WeatherCard";
+import CuacaHero from "../../components/CuacaHero";
 import AtribusiCuaca from "../../components/AtribusiCuaca";
 import StatusData from "../../components/statusData";
 import { useDebounce } from "../../hooks/use-debounce";
@@ -22,7 +22,6 @@ import { bersihkanCacheLama, daftarKotaTersimpan } from "../../services/cacheRep
 import { catatRiwayat } from "../../services/riwayatStorage";
 import { mintaIzinLokasi, ambilKoordinatSaatIni } from "../../services/locationService";
 import { konversiTingkatAQI } from "../../services/weatherAdapter";
-import { labelKodeCuaca } from "../../constants/weatherCodes";
 import { HasilGeocoding } from "../../../types/geocoding";
 import { HasilCuacaOffline, RingkasanKotaTersimpan } from "../../../types/cache";
 
@@ -229,15 +228,14 @@ export default function HalamanUtama() {
         {hasil && kotaTerpilih && !sedangMemuat && (
           <>
             <StatusData sumber={hasil.sumber} disimpanPada={hasil.disimpanPada} />
-            <WeatherCard
+            <CuacaHero
               kota={kotaTerpilih.name}
               suhu={hasil.cuaca.saatIni.suhu}
+              kodeCuaca={hasil.cuaca.saatIni.kodeCuaca}
+              kecepatanAngin={hasil.cuaca.saatIni.kecepatanAngin}
+              indeksAQI={hasil.kualitasUdara.indeksAQI}
               tingkatAQI={konversiTingkatAQI(hasil.kualitasUdara.indeksAQI)}
             />
-            <Text style={{ fontSize: 12, color: warna.textSecondary }}>
-              Kondisi: {labelKodeCuaca(hasil.cuaca.saatIni.kodeCuaca)} {"\u2022"} Angin{" "}
-              {hasil.cuaca.saatIni.kecepatanAngin} km/j
-            </Text>
             <Button
               title="Perbarui Sekarang"
               color={warna.primary}
