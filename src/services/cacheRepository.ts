@@ -81,6 +81,18 @@ export async function bersihkanCacheLama(batasUmurMs: number): Promise<void> {
         Date.now() - batasUmurMs,
     ]);
 }
+// Invalidation manual: hapus cache satu kota berdasarkan koordinat
+export async function hapusCache(
+    latitude: number,
+    longitude: number
+): Promise<boolean> {
+    const db = await ambilDatabase();
+    const hasil = await db.runAsync(
+        "DELETE FROM cache_cuaca WHERE kunci = ?",
+        [buatKunci(latitude, longitude)]
+    );
+    return hasil.changes > 0;
+}
 // Invalidation manual: kosongkan seluruh cache
 export async function hapusSemuaCache(): Promise<void> {
     const db = await ambilDatabase();

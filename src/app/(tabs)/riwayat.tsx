@@ -9,6 +9,8 @@ import {
     hapusRiwayat,
     hapusSemuaRiwayat,
 } from "../../services/riwayatStorage";
+import { hapusCache } from "../../services/cacheRepository";
+import { konfirmasiHapus } from "../../utils/konfirmasiHapus";
 import { KotaFavorit } from "../../../types/favorit";
 import { KotaRiwayat } from "../../../types/riwayat";
 import ConfirmModal from "../../../components/ConfirmModal";
@@ -40,6 +42,7 @@ export default function TabRiwayat() {
     const [daftarFavorit, setDaftarFavorit] = useState<KotaFavorit[]>([]);
     const [daftarRiwayat, setDaftarRiwayat] = useState<KotaRiwayat[]>([]);
     const [targetHapus, setTargetHapus] = useState<TargetHapus | null>(null);
+    const [pesanCache, setPesanCache] = useState<string | null>(null);
 
     useFocusEffect(
         useCallback(() => {
@@ -63,6 +66,26 @@ export default function TabRiwayat() {
                 ts: String(kota.dibukaPada),
             },
         });
+    }
+
+    function hapusCacheKota(kota: KotaRiwayat) {
+        setPesanCache(null);
+        konfirmasiHapus(
+            "Hapus Cache",
+            `Hapus data cuaca tersimpan untuk ${kota.nama}? Riwayat pencarian tetap disimpan.`,
+            async () => {
+                try {
+                    const terhapus = await hapusCache(kota.latitude, kota.longitude);
+                    setPesanCache(
+                        terhapus
+                            ? `Cache ${kota.nama} dihapus.`
+                            : `Cache ${kota.nama} sudah tidak ada.`
+                    );
+                } catch {
+                    setPesanCache(`Gagal menghapus cache ${kota.nama}.`);
+                }
+            }
+        );
     }
 
     async function prosesHapus() {
@@ -164,6 +187,11 @@ export default function TabRiwayat() {
                         <Text style={styles.keterangan}>
                             {daftarRiwayat.length} pencarian terakhir
                         </Text>
+                        {pesanCache && (
+                            <Text style={styles.pesan} accessibilityLabel={pesanCache}>
+                                {pesanCache}
+                            </Text>
+                        )}
                         {daftarRiwayat.length === 0 && (
                             <Text style={styles.kosong}>
                                 Belum ada riwayat pencarian. Cari kota di Beranda lalu pilih
@@ -199,17 +227,24 @@ export default function TabRiwayat() {
                                         color="#60646C"
                                     />
                                 </Pressable>
-                                <Button
-                                    title="Hapus"
-                                    color="#c0392b"
-                                    onPress={() =>
-                                        setTargetHapus({
-                                            tipe: "riwayat",
-                                            dibukaPada: kota.dibukaPada,
-                                            nama: kota.nama,
-                                        })
-                                    }
-                                />
+                                <View style={styles.aksiBaris}>
+                                    <Button
+                                        title="Hapus Cache"
+                                        color="#c0392b"
+                                        onPress={() => hapusCacheKota(kota)}
+                                    />
+                                    <Button
+                                        title="Hapus Riwayat"
+                                        color="#c0392b"
+                                        onPress={() =>
+                                            setTargetHapus({
+                                                tipe: "riwayat",
+                                                dibukaPada: kota.dibukaPada,
+                                                nama: kota.nama,
+                                            })
+                                        }
+                                    />
+                                </View>
                             </View>
                         ))}
                         {daftarRiwayat.length > 0 && (
@@ -314,6 +349,13 @@ const styles = StyleSheet.create({
     hint: {
         fontSize: 12,
         color: "#208AEF",
+    },
+    aksiBaris: {
+        gap: 6,
+    },
+    pesan: {
+        fontSize: 13,
+        color: "#1e7d32",
     },
     namaKota: {
         fontSize: 16,

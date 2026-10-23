@@ -1,5 +1,5 @@
 // src/app/(tabs)/index.tsx
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import SearchBox from "../../../components/SearchBox";
 import WeatherCard from "../../components/WeatherCard";
 import AtribusiCuaca from "../../components/AtribusiCuaca";
@@ -55,6 +55,14 @@ export default function HalamanUtama() {
       .then(muatKotaTersimpan)
       .catch(() => { });
   }, []);
+  // Muat ulang daftar setiap kembali ke Beranda (mis. setelah hapus cache).
+  useFocusEffect(
+    useCallback(() => {
+      daftarKotaTersimpan()
+        .then(setKotaTersimpan)
+        .catch(() => { });
+    }, [])
+  );
   useEffect(() => {
     if (teksTertunda.trim().length === 0) {
       setHasilPencarian([]);
